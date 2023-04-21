@@ -5,6 +5,8 @@ import { register } from "./routes/register";
 import { lookup } from "./routes/lookup";
 import { seeds } from "./Helpers/seed";
 import { addNode } from "./servers";
+import { send } from "./routes/send";
+import { message } from "./routes/message";
 require('dotenv').config();
 
 const PORT = process.env.PORT ?? 3000;
@@ -16,6 +18,8 @@ app.use(express.json());
 
 app.post("/register", register)
 app.get("/lookup", lookup)
+app.post("/send", send);
+app.post("/message", message)
 
 app.listen(PORT, ()=>{
     console.log(`Listening on port: ${PORT}`)
