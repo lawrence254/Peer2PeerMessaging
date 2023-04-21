@@ -31,4 +31,19 @@ To create a user, You can run one of the following commands in the terminal:
 
 You can use the second opton to create as many users as you wish to have in your test.
 
+### Sending Messages
+
+To be able to send messages to users registered on the nodes, you can use Postman, Insomnia or another API testing client of your choice to hit the  ```/send``` endpoint. 
+
+Example: Assuming our user ___Bobby___ is started on port 5012, we can then navigate to ```localhost:5012/send``` to send a message to ___UserX___ who is registered on ```localhost:3000```.
+
+The structure of the message will be as follows: 
+```JSON
+{
+	"message":"Hello UserX, It is nice to meet you",
+	"to":"UserX"
+}
+```
+Once you submit your request, the seed servers will search for a user with the matching username and if the name is not found on the first seed server, the requst is send to the next seed server available until the user is found. If no user is found mathcing the name in all the servers, you will get a `User Not Found` message.
+
 
