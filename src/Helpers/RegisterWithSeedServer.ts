@@ -1,14 +1,14 @@
 import fetch from "cross-fetch"
+import { getCurrentUri } from "./GetCurrentURI";
 export function registerWithSeedServer(uri:string) {
-    return fetch( `${uri}/register`, {
-        method:"POST",
-        body:JSON.stringify({
-            uri: `http://localhost:${process.env.URI}`, 
-            user:process.env.USER_NAME
-        }),
-        headers:{
-            "Content-Type":"application/jsom"
-        },
- 
-    }).then((response)=> response.json());
+    return fetch(`${uri}/register`, {
+    method: "POST",
+    body: JSON.stringify({
+      uri: getCurrentUri(),
+      user: process.env.USER_NAME,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((response) => response.json());
 }

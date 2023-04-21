@@ -1,30 +1,43 @@
 import { Request, Response } from "express";
-import { getNodeByUser, getNodes } from "../servers";
+import { addNode, getNodeByUser, getNodes } from "../servers";
 import { lookupUser } from "../Helpers/LookupUser";
 import { v4 as uuidv4 } from 'uuid';
+import { appendEntryToJson } from "../Helpers/AppendEntryToJSON";
+import path from "path";
 
 const seedIds = new Set();
-export async function lookup(req: Request, res:Response) {
-    const {user} = req.query as {user:string};
-    const serverByUser = getNodeByUser(user);
-    console.log(`Request for: ${req.query.user} was made`, serverByUser)
-    const requestId = req.get("x-request-id") ?? uuidv4();
+export async function lookup(req: Request, res: Response) {
+  appendEntryToJson(path.join(process.cwd(), "./trace.json"), {
+    user: process.env.USER_NAME,
+  });
 
-    if(seedIds.has(requestId)) return res.status(404).send(`User Not Found: ${req.query.user}`)
+  const { user } = req.query as { user: string };
+  const requestId = req.get("x-request-id") || uuidv4();
 
-    seedIds.add(requestId);
-    
-    if(!serverByUser){
-        let foundUser;
-        for(let server of getNodes()){
-            console.log('User not found. Checking ', server.user);
-              foundUser = await lookupUser(user!,server.uri,requestId)
-            }
-            if(foundUser){
-                return res.json(foundUser);
-            }else{
-                return res.status(404).send(`User Not Found: ${req.query.user}`)
-            }
-        }
-        res.json(serverByUser)
+  if (seedIds.has(requestId)) {
+    return res.status(404).send("user not found");
+  }
+
+  seedIds.add(requestId);
+  const serverByUser = getNodeByUser(user);
+
+  if (!serverByUser) {
+    let foundUser;
+
+    for (let server of getNodes()) {
+      try {
+        foundUser = await lookupUser(user, server.uri, requestId);
+      } catch (err) {}
     }
+
+    if (foundUser) {
+      console.log(`cached ${foundUser.user}`);
+      addNode(foundUser);
+      return res.json(foundUser);
+    } else {
+      return res.status(404).send("user not found");
+    }
+  }
+
+  res.json(serverByUser);
+}
